@@ -1,0 +1,83 @@
+.custom-navbar {
+  background-color: #FFFFFF !important;
+  border-bottom: 2px solid #E53935;
+  padding: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.logo {
+  color: #212529;
+  text-decoration: none;
+  font-size: 32px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+
+.logo:hover {
+  color: #212529;
+}
+
+.logo--accent {
+  color: #E53935;
+}
+
+.nav-link-custom {
+  color: #212529 !important;
+  font-weight: 500;
+  margin-left: 20px;
+  transition: color 0.2s;
+}
+
+.nav-link-custom:hover {
+  color: #E53935 !important;
+}
+
+/* Стили для иконки корзины */
+.cart-icon-link {
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+.calculator-link {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  background-color: #FFFFFF;
+  border: 2px solid #E53935;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.calculator-link:hover {
+  transform: scale(1.1);
+}
+
+.calculator-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 20px;
+  height: 20px;
+  background-color: #E53935;
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: 2px solid #FFFFFF;
+}
+
+/* Стиль для неактивной иконки корзины */
+.calculator-link.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: default;
+}

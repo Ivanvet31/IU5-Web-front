@@ -15,9 +15,15 @@ export const getStrategies = async (title: string): Promise<IPaginatedStrategies
       throw new Error('Backend is not available');
     }
     const data = await response.json();
+    
+    console.log('Backend response:', data); // Для отладки
+    
+    // Go возвращает массив напрямую, а не объект с items
+    const items = Array.isArray(data) ? data : (data.items || []);
+    
     return {
-      items: data.items || [],
-      total: data.total || 0
+      items: items,
+      total: items.length
     };
   } catch (error) {
     console.warn('Failed to fetch from backend, using mock data.', error);
@@ -35,7 +41,9 @@ export const getStrategyById = async (id: string): Promise<IStrategy | null> => 
     if (!response.ok) {
       throw new Error('Backend is not available');
     }
-    return await response.json();
+    const data = await response.json();
+    console.log('Backend strategy response:', data); // Для отладки
+    return data;
   } catch (error) {
     console.warn(`Failed to fetch strategy ${id}, using mock data.`, error);
     const strategy = STRATEGIES_MOCK.items.find(s => s.id === parseInt(id));

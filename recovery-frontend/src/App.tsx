@@ -1,25 +1,17 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import { AppNavbar } from './components/Navbar';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { StrategiesListPage } from './pages/StrategiesListPage';
 import { StrategyDetailPage } from './pages/StrategyDetailPage';
-
-const MainLayout = () => (
-  <>
-    <AppNavbar />
-    <Outlet />
-  </>
-);
+import { CartPage } from './pages/CartPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route element={<MainLayout />}>
-          <Route path="/strategies" element={<StrategiesListPage />} />
-          <Route path="/strategies/:id" element={<StrategyDetailPage />} />
-        </Route>
+        <Route path="/strategies" element={<StrategiesListPage />} />
+        <Route path="/strategies/:id" element={<StrategyDetailPage />} />
+        <Route path="/cart" element={<CartPage />} />
       </Routes>
     </BrowserRouter>
   );

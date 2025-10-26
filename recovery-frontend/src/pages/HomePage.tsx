@@ -8,12 +8,12 @@ export const HomePage = () => {
       <AppNavbar />
       <div className="hero-section">
         <Container>
-          <Row className="align-items-center min-vh-50">
+          <Row className="align-items-center">
             <Col lg={8} className="mx-auto text-center">
               <h1 className="display-4 fw-bold mb-4">
-                RecoveryPredictor
+                RecoveryTime
               </h1>
-              <h2 className="h3 mb-4 text-muted">
+              <h2 className="h3 mb-4">
                 Прогноз времени восстановления после сбоя
               </h2>
               <p className="lead mb-4">
@@ -23,25 +23,25 @@ export const HomePage = () => {
               <div className="features mt-5">
                 <Row>
                   <Col md={4} className="mb-4">
-                    <div className="feature-box p-4 rounded shadow-sm">
-                      <h4>🔄 Множество стратегий</h4>
-                      <p className="text-muted">
+                    <div className="feature-box p-4">
+                      <h4>🗂️ Множество стратегий</h4>
+                      <p>
                         Выбор оптимальной стратегии восстановления из каталога
                       </p>
                     </div>
                   </Col>
                   <Col md={4} className="mb-4">
-                    <div className="feature-box p-4 rounded shadow-sm">
+                    <div className="feature-box p-4">
                       <h4>⏱️ Точный прогноз</h4>
-                      <p className="text-muted">
+                      <p>
                         Расчет времени восстановления с учетом всех параметров
                       </p>
                     </div>
                   </Col>
                   <Col md={4} className="mb-4">
-                    <div className="feature-box p-4 rounded shadow-sm">
+                    <div className="feature-box p-4">
                       <h4>📊 Аналитика</h4>
-                      <p className="text-muted">
+                      <p>
                         Анализ эффективности различных подходов к восстановлению
                       </p>
                     </div>

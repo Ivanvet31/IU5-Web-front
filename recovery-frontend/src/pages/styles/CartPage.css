@@ -1,0 +1,61 @@
+.cart-page h1 {
+  color: #212529;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  font-size: 36px;
+}
+
+.cart-page .card {
+  background-color: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.form-label {
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 8px;
+}
+
+.form-control {
+  background-color: #FFFFFF;
+  border: 1px solid #CED4DA;
+  border-radius: 8px;
+  color: #212529;
+  padding: 12px;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+}
+
+.form-control:disabled {
+  background-color: #e9ecef;
+}
+
+.total-time-card {
+  background-color: #2C2C2C;
+  border: none;
+  border-radius: 15px;
+}
+
+.total-time-card h4 {
+  color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.total-time-input {
+  max-width: 200px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+  border-color: #5a6268;
+}

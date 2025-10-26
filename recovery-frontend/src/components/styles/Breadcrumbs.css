@@ -1,12 +1,13 @@
 .breadcrumb {
   background-color: transparent;
   padding: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .breadcrumb-item {
   display: inline-flex;
   align-items: center;
+  font-family: 'Inter', sans-serif;
 }
 
 .breadcrumb-item.active {
@@ -14,10 +15,11 @@
 }
 
 .breadcrumb-item a {
-  color: #0d6efd;
+  color: #E53935;
   transition: color 0.2s;
+  font-weight: 500;
 }
 
 .breadcrumb-item a:hover {
-  color: #0a58ca;
+  color: #c62828;
 }

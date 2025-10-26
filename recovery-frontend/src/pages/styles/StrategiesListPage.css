@@ -3,22 +3,86 @@
 }
 
 .search-input {
-  border: 2px solid #e0e0e0;
+  background-color: #FFFFFF;
+  border: 1px solid #CED4DA;
+  border-radius: 8px;
+  padding: 12px 15px;
+  font-size: 16px;
   transition: border-color 0.3s;
+  font-family: 'Inter', sans-serif;
 }
 
 .search-input:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  border-color: #E53935;
+  box-shadow: 0 0 0 0.2rem rgba(229, 57, 53, 0.25);
+  outline: none;
 }
 
 h1 {
-  color: #2c3e50;
+  color: #212529;
   font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  font-size: 36px;
+  text-align: center;
+}
+
+hr {
+  border-color: #E0E0E0;
+}
+
+/* Стили для иконки корзины на странице поиска */
+.cart-link-page {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.calculator-link-page {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  background-color: #FFFFFF;
+  border: 2px solid #E53935;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  margin: 0 auto;
+}
+
+.calculator-link-page:hover {
+  transform: scale(1.1);
+}
+
+.calculator-link-page .calculator-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 20px;
+  height: 20px;
+  background-color: #E53935;
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: 2px solid #FFFFFF;
 }
 
 @media (max-width: 768px) {
   .search-input {
     margin-bottom: 1rem;
+  }
+  
+  h1 {
+    font-size: 28px;
+  }
+  
+  .calculator-link-page {
+    margin-top: 10px;
   }
 }

@@ -1,9 +1,9 @@
-import { Row, Col, Button } from 'react-bootstrap';
+import { Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import type { IStrategy } from '../types';
 import './styles/StrategyCard.css';
 
-export const DefaultImage = 'http://localhost:9000/strategies/Images/default.png';
+export const DefaultImage = 'http://localhost:9000/recovery-images/backup.png';
 
 interface StrategyCardProps {
   strategy: IStrategy;
@@ -11,41 +11,38 @@ interface StrategyCardProps {
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy }) => {
   return (
-    <div className="strategy-card mb-4 p-3 border rounded shadow-sm">
-      <Row>
-        <Col md={4}>
-          <img
-            src={strategy.image_url || DefaultImage}
-            alt={strategy.title}
-            className="img-fluid rounded"
-          />
-        </Col>
-        <Col md={8}>
-          <div className="strategy-content">
-            <h5 className="strategy-title">{strategy.title}</h5>
-            <p className="strategy-description text-muted">
-              {strategy.description.substring(0, 150)}...
-            </p>
-            <div className="mt-3">
-              <span className="badge bg-info me-2">
-                Базовое время: {strategy.base_recovery_hours} ч
-              </span>
-              <span className={`badge ${strategy.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
-                {strategy.status === 'active' ? 'Активна' : 'Неактивна'}
-              </span>
-            </div>
+    <Card className="strategy-card h-100">
+      <Card.Img 
+        variant="top" 
+        src={strategy.image_url || DefaultImage}
+        alt={strategy.title}
+        className="strategy-card__image"
+      />
+      <Card.Body className="d-flex flex-column">
+        <Card.Title className="strategy-title">{strategy.title}</Card.Title>
+        <Card.Text className="strategy-description flex-grow-1">
+          {strategy.description.substring(0, 100)}...
+        </Card.Text>
+        <div className="mt-auto">
+          <Button 
+            as={Link} 
+            to={`/strategies/${strategy.id}`}
+            variant="link"
+            className="strategy-card__link"
+          >
+            Подробнее →
+          </Button>
+          <div className="mt-2">
             <Button 
-              as={Link} 
-              to={`/strategies/${strategy.id}`}
               variant="primary" 
               size="sm"
-              className="mt-3"
+              className="w-100"
             >
-              Подробнее
+              Добавить в заявку
             </Button>
           </div>
-        </Col>
-      </Row>
-    </div>
+        </div>
+      </Card.Body>
+    </Card>
   );
 };

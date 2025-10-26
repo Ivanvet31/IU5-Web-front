@@ -1,0 +1,33 @@
+.custom-navbar {
+  background-color: #FFFFFF !important;
+  border-bottom: 2px solid #E53935;
+  padding: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.logo {
+  color: #212529;
+  text-decoration: none;
+  font-size: 32px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+
+.logo:hover {
+  color: #212529;
+}
+
+.logo--accent {
+  color: #E53935;
+}
+
+.nav-link-custom {
+  color: #212529 !important;
+  font-weight: 500;
+  margin-left: 20px;
+  transition: color 0.2s;
+}
+
+.nav-link-custom:hover {
+  color: #E53935 !important;
+}
