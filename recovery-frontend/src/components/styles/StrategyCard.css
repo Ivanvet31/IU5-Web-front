@@ -1,0 +1,32 @@
+.strategy-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  background-color: #ffffff;
+}
+
+.strategy-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.strategy-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.strategy-title {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.strategy-description {
+  flex-grow: 1;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.strategy-card img {
+  height: 200px;
+  object-fit: cover;
+}
