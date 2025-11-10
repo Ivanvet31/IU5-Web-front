@@ -15,7 +15,7 @@ export const CartPage = () => {
   return (
     <>
       <AppNavbar />
-      <Container className="py-4">
+      <Container className="py-4 cart-page"> {/* Добавил класс для стилей */}
         <CustomBreadcrumbs crumbs={breadcrumbs} />
         
         <h1 className="mb-4">Заявка на восстановление</h1>
@@ -27,9 +27,13 @@ export const CartPage = () => {
               <p className="text-muted mb-4">
                 Добавьте стратегии восстановления из каталога
               </p>
-              <Button as={Link} to="/strategies" variant="primary">
-                Перейти к стратегиям
-              </Button>
+              {/* --- ИСПРАВЛЕНИЕ ЗДЕСЬ --- */}
+              <Link to="/strategies">
+                <Button variant="primary">
+                  Перейти к стратегиям
+                </Button>
+              </Link>
+              {/* --- КОНЕЦ ИСПРАВЛЕНИЯ --- */}
             </Card.Body>
           </Card>
         ) : (

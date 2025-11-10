@@ -1,13 +1,15 @@
+// src/api/strategiesApi.ts
 import type { IPaginatedStrategies, IStrategy } from '../types';
 import { STRATEGIES_MOCK } from './mock';
+import { getApiBase } from '../config'; // <-- ИМПОРТ
 
-const API_PREFIX = '/api';
+const API_BASE = getApiBase(); // <-- ПОЛУЧАЕМ URL
 
 // Получение списка стратегий с фильтрацией по названию
 export const getStrategies = async (title: string): Promise<IPaginatedStrategies> => {
-  const url = title 
-    ? `${API_PREFIX}/strategies?title=${encodeURIComponent(title)}`
-    : `${API_PREFIX}/strategies`;
+  const url = title
+    ? `${API_BASE}/strategies?title=${encodeURIComponent(title)}`
+    : `${API_BASE}/strategies`;
   
   try {
     const response = await fetch(url);
@@ -16,9 +18,6 @@ export const getStrategies = async (title: string): Promise<IPaginatedStrategies
     }
     const data = await response.json();
     
-    console.log('Backend response:', data); // Для отладки
-    
-    // Go возвращает массив напрямую, а не объект с items
     const items = Array.isArray(data) ? data : (data.items || []);
     
     return {
@@ -37,12 +36,11 @@ export const getStrategies = async (title: string): Promise<IPaginatedStrategies
 // Получение одной стратегии по ID
 export const getStrategyById = async (id: string): Promise<IStrategy | null> => {
   try {
-    const response = await fetch(`${API_PREFIX}/strategies/${id}`);
+    const response = await fetch(`${API_BASE}/strategies/${id}`);
     if (!response.ok) {
       throw new Error('Backend is not available');
     }
     const data = await response.json();
-    console.log('Backend strategy response:', data); // Для отладки
     return data;
   } catch (error) {
     console.warn(`Failed to fetch strategy ${id}, using mock data.`, error);

@@ -86,3 +86,30 @@ hr {
     margin-top: 10px;
   }
 }
+
+@media (max-width: 768px) {
+  .strategies-list {
+    margin-top: 1rem;
+  }
+
+  .search-input {
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 1.5rem;
+  }
+
+  .calculator-link-page {
+    width: 40px;
+    height: 40px;
+    margin-top: 0;
+  }
+
+  .calculator-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+  }
+}

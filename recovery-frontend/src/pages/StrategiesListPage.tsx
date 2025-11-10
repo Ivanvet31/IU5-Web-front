@@ -1,40 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Container, Row, Col, Spinner, Form, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Cart3 } from 'react-bootstrap-icons';
 import { AppNavbar } from '../components/Navbar';
 import { StrategyCard } from '../components/StrategyCard';
 import { CustomBreadcrumbs } from '../components/Breadcrumbs';
-import { getStrategies } from '../api/strategiesApi';
-import type { IStrategy } from '../types';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { fetchStrategies, setSearchQuery } from '../store/slices/strategiesSlice';
 import './styles/StrategiesListPage.css';
 
 export const StrategiesListPage = () => {
-  const [strategies, setStrategies] = useState<IStrategy[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const fetchStrategies = (filterTitle: string) => {
-    setLoading(true);
-    getStrategies(filterTitle)
-      .then(data => {
-        if (Array.isArray(data.items)) {
-          setStrategies(data.items);
-        } else {
-          console.error("Получены неверные данные:", data);
-          setStrategies([]);
-        }
-      })
-      .finally(() => setLoading(false));
-  };
+  const dispatch = useAppDispatch();
+  const { items: strategies, loading, searchQuery } = useAppSelector((state) => state.strategies);
 
   useEffect(() => {
-    fetchStrategies('');
-  }, []);
+    dispatch(fetchStrategies(searchQuery));
+  }, [dispatch, searchQuery]);
 
   const handleSearchSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    fetchStrategies(searchTerm);
+    dispatch(fetchStrategies(searchQuery));
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setSearchQuery(e.target.value));
   };
 
   const breadcrumbs = [
@@ -55,8 +44,8 @@ export const StrategiesListPage = () => {
               <Form.Control
                 type="search"
                 placeholder="Поиск"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchQuery}
+                onChange={handleSearchChange}
                 className="search-input"
               />
             </Col>

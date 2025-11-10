@@ -10,13 +10,16 @@ interface StrategyCardProps {
 }
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy }) => {
+  const imageUrl = strategy.image_url || DefaultImage;
+
   return (
     <Card className="strategy-card h-100">
       <Card.Img 
         variant="top" 
-        src={strategy.image_url || DefaultImage}
+        src={imageUrl}
         alt={strategy.title}
         className="strategy-card__image"
+        onError={(e) => { (e.target as HTMLImageElement).src = DefaultImage; }}
       />
       <Card.Body className="d-flex flex-column">
         <Card.Title className="strategy-title">{strategy.title}</Card.Title>
@@ -24,14 +27,16 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy }) => {
           {strategy.description.substring(0, 100)}...
         </Card.Text>
         <div className="mt-auto">
-          <Button 
-            as={Link} 
-            to={`/strategies/${strategy.id}`}
-            variant="link"
-            className="strategy-card__link"
-          >
-            Подробнее →
-          </Button>
+          {/* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */}
+          <Link to={`/strategies/${strategy.id}`} className="d-block text-decoration-none">
+            <Button 
+              variant="link"
+              className="strategy-card__link p-0"
+            >
+              Подробнее →
+            </Button>
+          </Link>
+          {/* --- КОНЕЦ ИЗМЕНЕНИЯ --- */}
           <div className="mt-2">
             <Button 
               variant="primary" 

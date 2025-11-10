@@ -43,9 +43,13 @@ export const StrategyDetailPage = () => {
         <AppNavbar />
         <Container className="py-5">
           <h2>Стратегия не найдена</h2>
-          <Button as={Link} to="/strategies" variant="primary" className="mt-3">
-            Вернуться к списку
-          </Button>
+          {/* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */}
+          <Link to="/strategies">
+            <Button variant="primary" className="mt-3">
+              Вернуться к списку
+            </Button>
+          </Link>
+          {/* --- КОНЕЦ ИЗМЕНЕНИЯ --- */}
         </Container>
       </>
     );
@@ -76,6 +80,7 @@ export const StrategyDetailPage = () => {
                 src={displayImage} 
                 alt={strategy.title}
                 className="strategy-detail-image"
+                onError={(e) => { (e.target as HTMLImageElement).src = DefaultImage; }}
               />
             </Card>
           </Col>
@@ -116,9 +121,13 @@ export const StrategyDetailPage = () => {
             </Card>
 
             <div className="d-flex gap-2">
-              <Button as={Link} to="/strategies" variant="outline-secondary">
-                Вернуться к списку
-              </Button>
+              {/* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */}
+              <Link to="/strategies">
+                <Button variant="outline-secondary">
+                  Вернуться к списку
+                </Button>
+              </Link>
+              {/* --- КОНЕЦ ИЗМЕНЕНИЯ --- */}
             </div>
           </Col>
         </Row>
