@@ -1,24 +1,19 @@
-// src/config.ts
-
-// IP вашего Go бэкенда. Убедитесь, что он доступен.
-const BACKEND_IP = 'http://localhost:8080';
+// IP вашего Go бэкенда.
+const BACKEND_IP = 'http://localhost:8090'; 
 const MINIO_IP = 'http://localhost:9000';
 
-// Функция для определения базового URL API
 export const getApiBase = (): string => {
-    // @ts-ignore: TypeScript не знает о глобальной переменной __TAURI__
+    // @ts-ignore
     const isTauri = !!window.__TAURI__;
 
-    // В Tauri-приложении используем полный URL, в браузере - относительный для прокси
+    // Если Tauri - полный путь (прокси в сборке нет).
+    // Если браузер - относительный путь (работает через прокси Vite).
     return isTauri ? `${BACKEND_IP}/api` : '/api';
 };
 
-// Функция для определения базового URL изображений
 export const getImageBase = (): string => {
     // @ts-ignore
     const isTauri = !!window.__TAURI__;
-    
-    // В Tauri используем полный URL, в браузере - относительный путь (если Minio тоже проксируется)
-    // или полный, если CORS на Minio настроен. Для простоты оставим полный.
+    // Картинки всегда забираем по полному пути
     return isTauri ? `${MINIO_IP}` : 'http://localhost:9000';
 };

@@ -3,7 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://Ivanvet31.github.io/IU5-Web-front",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,9 +10,7 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.0.1",
@@ -40,7 +37,7 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.0",
-    "vite-plugin-mkcert": "^1.17.9",
+    "vite-plugin-mkcert": "^1.17.6",
     "vite-plugin-pwa": "^0.17.4",
     "workbox-window": "^7.0.0"
   }
