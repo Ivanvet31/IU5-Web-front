@@ -7,15 +7,22 @@ import { StrategyCard } from '../components/StrategyCard';
 import { CustomBreadcrumbs } from '../components/Breadcrumbs';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchStrategies, setSearchQuery } from '../store/slices/strategiesSlice';
+import { fetchCartBadge } from '../store/slices/cartSlice';
 import './styles/StrategiesListPage.css';
 
 export const StrategiesListPage = () => {
   const dispatch = useAppDispatch();
   const { items: strategies, loading, searchQuery } = useAppSelector((state) => state.strategies);
+  
+  const { count, requestId } = useAppSelector((state) => state.cart);
+  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
 
   useEffect(() => {
     dispatch(fetchStrategies(searchQuery));
-  }, [dispatch, searchQuery]);
+    if (isAuthenticated) {
+        dispatch(fetchCartBadge());
+    }
+  }, [dispatch, searchQuery, isAuthenticated]);
 
   const handleSearchSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -39,7 +46,7 @@ export const StrategiesListPage = () => {
         <h1 className="mb-4">Стратегии восстановления</h1>
         
         <Form onSubmit={handleSearchSubmit} className="mb-4">
-          <Row className="align-items-center">
+          <Row className="align-items-center justify-content-center"> {/* Добавил justify-content-center */}
             <Col md={8}>
               <Form.Control
                 type="search"
@@ -50,22 +57,29 @@ export const StrategiesListPage = () => {
               />
             </Col>
             <Col md={2}>
-              <Button 
-                type="submit" 
-                variant="primary" 
-                className="w-100"
-              >
+              <Button type="submit" variant="primary" className="w-100">
                 Поиск
               </Button>
             </Col>
-            <Col md={2} className="text-center">
-              <Link to="/cart" className="cart-link-page">
-                <div className="calculator-link-page">
-                  <Cart3 size={24} color="#333" />
-                  <span className="calculator-badge">0</span>
-                </div>
-              </Link>
-            </Col>
+
+            {/* ИЗМЕНЕНИЕ: Рендерим колонку с корзиной ТОЛЬКО если авторизован */}
+            {isAuthenticated && (
+                <Col md={2} className="text-center">
+                {requestId && count > 0 ? (
+                    <Link to={`/cart`} className="cart-link-page">
+                        <div className="calculator-link-page">
+                        <Cart3 size={24} color="#333" />
+                        <span className="calculator-badge">{count}</span>
+                        </div>
+                    </Link>
+                ) : (
+                    <div className="calculator-link-page disabled" style={{opacity: 0.5, cursor: 'not-allowed'}}>
+                        <Cart3 size={24} color="#999" />
+                        <span className="calculator-badge" style={{backgroundColor: '#ccc'}}>0</span>
+                    </div>
+                )}
+                </Col>
+            )}
           </Row>
         </Form>
 

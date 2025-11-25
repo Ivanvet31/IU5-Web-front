@@ -1,26 +1,42 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Container, Spinner, Row, Col, Button, Card } from 'react-bootstrap';
 import { AppNavbar } from '../components/Navbar';
-import { getStrategyById } from '../api/strategiesApi';
+import { api } from '../api'; // Используем api напрямую или через thunk
 import { CustomBreadcrumbs } from '../components/Breadcrumbs';
-import type { IStrategy } from '../types';
+import type { DsStrategyDTO } from '../api/Api';
 import { DefaultImage } from '../components/StrategyCard';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { addStrategyToDraft } from '../store/slices/cartSlice'; // Импорт экшена
 import './styles/StrategyDetailPage.css';
 
 export const StrategyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [strategy, setStrategy] = useState<IStrategy | null>(null);
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  
+  // Получаем статус авторизации
+  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
+
+  const [strategy, setStrategy] = useState<DsStrategyDTO | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
       setLoading(true);
-      getStrategyById(id)
-        .then(data => setStrategy(data))
+      api.strategies.strategiesDetail(parseInt(id))
+        .then(res => setStrategy(res.data))
+        .catch(err => console.error(err))
         .finally(() => setLoading(false));
     }
   }, [id]);
+
+  const handleAddToCart = () => {
+      if (strategy?.id) {
+          dispatch(addStrategyToDraft(strategy.id));
+          navigate('/strategies'); // Или остаться на странице и показать алерт
+      }
+  };
 
   const displayImage = strategy?.image_url || DefaultImage;
 
@@ -29,9 +45,7 @@ export const StrategyDetailPage = () => {
       <>
         <AppNavbar />
         <Container className="py-5 text-center">
-          <Spinner animation="border" role="status" variant="primary">
-            <span className="visually-hidden">Загрузка...</span>
-          </Spinner>
+          <Spinner animation="border" role="status" variant="primary" />
         </Container>
       </>
     );
@@ -41,15 +55,11 @@ export const StrategyDetailPage = () => {
     return (
       <>
         <AppNavbar />
-        <Container className="py-5">
+        <Container className="py-5 text-center">
           <h2>Стратегия не найдена</h2>
-          {/* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */}
           <Link to="/strategies">
-            <Button variant="primary" className="mt-3">
-              Вернуться к списку
-            </Button>
+            <Button variant="primary" className="mt-3">Вернуться к списку</Button>
           </Link>
-          {/* --- КОНЕЦ ИЗМЕНЕНИЯ --- */}
         </Container>
       </>
     );
@@ -57,7 +67,7 @@ export const StrategyDetailPage = () => {
 
   const breadcrumbs = [
     { label: 'Стратегии восстановления', path: '/strategies' },
-    { label: strategy.title, active: true },
+    { label: strategy.title || 'Детали', active: true },
   ];
 
   return (
@@ -91,6 +101,16 @@ export const StrategyDetailPage = () => {
                 <Card.Text className="strategy-description">
                   {strategy.description}
                 </Card.Text>
+                
+                {/* ИЗМЕНЕНИЕ: Кнопка добавления только для авторизованных */}
+                {isAuthenticated && (
+                    <div className="mt-4">
+                        <Button variant="primary" size="lg" onClick={handleAddToCart}>
+                            Добавить в заявку
+                        </Button>
+                    </div>
+                )}
+
               </Card.Body>
             </Card>
 
@@ -106,28 +126,16 @@ export const StrategyDetailPage = () => {
                       </div>
                     </div>
                   </Col>
-                  <Col sm={6} className="mb-3">
-                    <div className="param-box">
-                      <small className="text-muted">Статус</small>
-                      <div className="param-value">
-                        <span className={`badge ${strategy.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
-                          {strategy.status === 'active' ? 'Активна' : 'Неактивна'}
-                        </span>
-                      </div>
-                    </div>
-                  </Col>
                 </Row>
               </Card.Body>
             </Card>
 
             <div className="d-flex gap-2">
-              {/* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */}
               <Link to="/strategies">
                 <Button variant="outline-secondary">
                   Вернуться к списку
                 </Button>
               </Link>
-              {/* --- КОНЕЦ ИЗМЕНЕНИЯ --- */}
             </div>
           </Col>
         </Row>
