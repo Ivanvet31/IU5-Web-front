@@ -12,15 +12,14 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { RequestsListPage } from './pages/RequestsListPage';
+import { RequestDetailPage } from './pages/RequestDetailPage'; // <--- ИМПОРТ
 
-// Получаем базовый URL из переменных окружения Vite (для деплоя на GitHub Pages)
 const appBaseName = import.meta.env.BASE_URL;
 
 function App() {
   const dispatch = useAppDispatch();
   const token = useAppSelector((state) => state.user.token);
 
-  // Восстановление сессии: если есть токен, но (возможно) нет данных юзера - пытаемся их обновить
   useEffect(() => {
     if (token) {
       dispatch(fetchUserProfile());
@@ -30,19 +29,22 @@ function App() {
   return (
     <BrowserRouter basename={appBaseName}>
       <Routes>
-        {/* Публичные маршруты */}
         <Route path="/" element={<HomePage />} />
         <Route path="/strategies" element={<StrategiesListPage />} />
         <Route path="/strategies/:id" element={<StrategyDetailPage />} />
         
-        {/* Маршруты авторизации */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Защищенные маршруты (в идеале обернуть в PrivateRoute, но пока так) */}
+        {/* Защищенные маршруты */}
         <Route path="/cart" element={<CartPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        
+        {/* Список заявок */}
         <Route path="/requests" element={<RequestsListPage />} />
+        
+        {/* Детальная страница заявки (НОВЫЙ РОУТ) */}
+        <Route path="/requests/:id" element={<RequestDetailPage />} />
       </Routes>
     </BrowserRouter>
   );

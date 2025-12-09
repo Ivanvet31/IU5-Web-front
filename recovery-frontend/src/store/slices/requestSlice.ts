@@ -110,6 +110,21 @@ export const deleteRequest = createAsyncThunk(
     }
 );
 
+// 8. Резолюция заявки (Одобрить/Отклонить) - НОВОЕ
+export const resolveRequest = createAsyncThunk(
+    'requests/resolve',
+    async ({ id, action }: { id: number; action: string }, { rejectWithValue }) => {
+        try {
+            // action: "complete" или "reject"
+            // Метод resolveUpdate должен появиться в Api.ts после генерации
+            await api.recoveryRequests.resolveUpdate(id, { action });
+            return { id, status: action === 'complete' ? 'completed' : 'rejected' };
+        } catch (err: any) {
+            return rejectWithValue('Ошибка при изменении статуса заявки');
+        }
+    }
+);
+
 const requestSlice = createSlice({
     name: 'requests',
     initialState,
@@ -124,7 +139,10 @@ const requestSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchRequestsList.pending, (state) => { state.loading = true; })
+            .addCase(fetchRequestsList.pending, (state) => { 
+                // Не ставим loading=true при каждом поллинге, чтобы список не моргал
+                if (state.list.length === 0) state.loading = true; 
+            })
             .addCase(fetchRequestsList.fulfilled, (state, action) => {
                 state.loading = false;
                 state.list = action.payload || [];
@@ -154,6 +172,19 @@ const requestSlice = createSlice({
             })
             .addCase(submitRequest.fulfilled, (state) => { state.operationSuccess = true; })
             .addCase(deleteRequest.fulfilled, (state) => { state.operationSuccess = true; })
+            
+            // Обработка резолюции
+            .addCase(resolveRequest.fulfilled, (state, action) => {
+                const req = state.list.find(r => r.id === action.payload.id);
+                if (req) {
+                    req.status = action.payload.status;
+                    // Если одобрено, сбрасываем время, чтобы показать спиннер ожидания
+                    if (action.payload.status === 'completed') {
+                        req.calculated_recovery_time_hours = undefined; 
+                    }
+                }
+            })
+
             .addCase(logoutUser.fulfilled, () => initialState);
     }
 });
