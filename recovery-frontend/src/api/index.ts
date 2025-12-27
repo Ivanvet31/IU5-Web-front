@@ -7,6 +7,7 @@ export const api = new Api({
 
 // Добавляем токен авторизации ко всем запросам
 api.instance.interceptors.request.use((config) => {
+  // Читаем из localStorage
   const token = localStorage.getItem('authToken');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -19,11 +20,10 @@ api.instance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-        // Если не на странице логина, чистим и редиректим
         if (!window.location.pathname.includes('/login')) {
+            // Если токен невалиден — чистим всё и редиректим
             localStorage.removeItem('authToken');
             localStorage.removeItem('userInfo');
-            // Жесткая перезагрузка на логин
             window.location.href = '/login';
         }
     }

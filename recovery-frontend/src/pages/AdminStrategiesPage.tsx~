@@ -1,0 +1,232 @@
+import React, { useEffect, useState } from 'react';
+import { Container, Table, Button, Modal, Form, Image } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { PencilSquare, Trash, PlusLg } from 'react-bootstrap-icons';
+import { fetchStrategies, createStrategy, updateStrategy, deleteStrategy, uploadStrategyImage } from '../store/slices/strategiesSlice';
+import type { AppDispatch, RootState } from '../store/store';
+import { AppNavbar } from '../components/Navbar';
+import { DefaultImage } from '../components/StrategyCard';
+import { getStoragePath } from '../config';
+
+export const AdminStrategiesPage = () => {
+    const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
+    const { items } = useSelector((state: RootState) => state.strategies);
+    const { user } = useSelector((state: RootState) => state.user);
+
+    const [showModal, setShowModal] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        base_recovery_hours: 0,
+        image_filename: ''
+    });
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+    useEffect(() => {
+        if (user && !user.is_moderator) {
+            navigate('/403');
+        }
+    }, [user, navigate]);
+
+    useEffect(() => {
+        dispatch(fetchStrategies());
+    }, [dispatch]);
+
+    // --- ИСПРАВЛЕНИЕ: Сортировка перед рендерингом ---
+    // Создаем копию массива и сортируем её по ID по возрастанию
+    const sortedItems = [...items].sort((a, b) => a.id - b.id);
+
+    const handleClose = () => {
+        setShowModal(false);
+        setEditingId(null);
+        setFormData({ title: '', description: '', base_recovery_hours: 0, image_filename: '' });
+        setSelectedFile(null);
+    };
+
+    const handleShowCreate = () => setShowModal(true);
+
+    const handleShowEdit = (strategy: any) => {
+        setEditingId(strategy.id);
+        
+        let filename = '';
+        if (strategy.image_url) {
+            const parts = strategy.image_url.split('/');
+            filename = parts[parts.length - 1];
+        }
+
+        setFormData({
+            title: strategy.title,
+            description: strategy.description,
+            base_recovery_hours: strategy.base_recovery_hours,
+            image_filename: filename
+        });
+        setShowModal(true);
+    };
+
+    const handleDelete = async (id: number) => {
+        if (window.confirm('Вы уверены, что хотите удалить эту стратегию?')) {
+            await dispatch(deleteStrategy(id));
+        }
+    };
+
+    const handleSubmit = async () => {
+        const fullImageUrl = formData.image_filename 
+            ? `${getStoragePath()}/${formData.image_filename}`
+            : undefined;
+
+        const payload: any = {
+            title: formData.title,
+            description: formData.description,
+            base_recovery_hours: formData.base_recovery_hours,
+            image_url: fullImageUrl 
+        };
+
+        if (editingId) {
+            await dispatch(updateStrategy({ id: editingId, data: payload }));
+        } else {
+            await dispatch(createStrategy(payload));
+        }
+        
+        // Если есть файл, загружаем его отдельно (логика загрузки на s3/minio)
+        if (selectedFile && editingId) {
+             // Тут небольшая логика: если создаем новую, id узнаем только после ответа сервера
+             // В текущем коде createStrategy возвращает объект, можно доработать загрузку для create
+             // Но для update (editingId) работает точно.
+             await dispatch(uploadStrategyImage({ id: editingId, file: selectedFile }));
+        }
+        
+        handleClose();
+        // Можно перезапросить список, чтобы точно синхронизироваться с бэком
+        dispatch(fetchStrategies());
+    };
+
+    return (
+        <>
+            <AppNavbar />
+            <Container className="py-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h2 className="fw-bold">Управление стратегиями</h2>
+                    <Button variant="success" onClick={handleShowCreate}>
+                        <PlusLg className="me-2" /> Добавить стратегию
+                    </Button>
+                </div>
+
+                <div className="table-responsive shadow-sm rounded bg-white">
+                    <Table hover className="mb-0 align-middle">
+                        <thead className="bg-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Изображение</th>
+                                <th>Название</th>
+                                <th>Описание</th>
+                                <th>Часы (Base)</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {/* Используем sortedItems вместо items */}
+                            {sortedItems.map((s) => (
+                                <tr key={s.id}>
+                                    <td>{s.id}</td>
+                                    <td>
+                                        <Image 
+                                            src={s.image_url || DefaultImage} 
+                                            rounded 
+                                            style={{ width: '50px', height: '50px', objectFit: 'cover' }} 
+                                            onError={(e) => { (e.target as HTMLImageElement).src = DefaultImage; }}
+                                        />
+                                    </td>
+                                    <td className="fw-bold">{s.title}</td>
+                                    <td className="text-muted small" style={{maxWidth: '300px'}}>
+                                        {s.description.length > 50 ? s.description.substring(0, 50) + '...' : s.description}
+                                    </td>
+                                    <td>{s.base_recovery_hours} ч.</td>
+                                    <td>
+                                        <div className="d-flex gap-2">
+                                            <Button variant="outline-primary" size="sm" onClick={() => handleShowEdit(s)}>
+                                                <PencilSquare />
+                                            </Button>
+                                            <Button variant="outline-danger" size="sm" onClick={() => handleDelete(s.id)}>
+                                                <Trash />
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </div>
+
+                {/* Модальное окно */}
+                <Modal show={showModal} onHide={handleClose} centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title>{editingId ? 'Редактировать стратегию' : 'Новая стратегия'}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Название</Form.Label>
+                                <Form.Control 
+                                    type="text" 
+                                    value={formData.title} 
+                                    onChange={e => setFormData({...formData, title: e.target.value})} 
+                                />
+                            </Form.Group>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Описание</Form.Label>
+                                <Form.Control 
+                                    as="textarea" 
+                                    rows={3} 
+                                    value={formData.description} 
+                                    onChange={e => setFormData({...formData, description: e.target.value})} 
+                                />
+                            </Form.Group>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Базовое время восстановления (ч)</Form.Label>
+                                <Form.Control 
+                                    type="number" 
+                                    value={formData.base_recovery_hours} 
+                                    onChange={e => setFormData({...formData, base_recovery_hours: Number(e.target.value)})} 
+                                />
+                            </Form.Group>
+                            
+                            <Form.Group className="mb-3">
+                                <Form.Label>Имя файла изображения</Form.Label>
+                                <Form.Control 
+                                    type="text" 
+                                    placeholder="например: backup.png"
+                                    value={formData.image_filename}
+                                    onChange={(e) => setFormData({...formData, image_filename: e.target.value})} 
+                                />
+                                <Form.Text className="text-muted">
+                                    Файл должен лежать в бакете <code>recovery-images</code> MinIO. <br/>
+                                    Базовый путь: <code>{getStoragePath()}/...</code>
+                                </Form.Text>
+                            </Form.Group>
+
+                            {/* Дополнительно: Загрузка файла (опционально, если хотите оставить загрузку с ПК) */}
+                             {/*
+                            <Form.Group className="mb-3">
+                                <Form.Label>Или загрузить файл</Form.Label>
+                                <Form.Control 
+                                    type="file" 
+                                    accept="image/*"
+                                    onChange={(e: any) => setSelectedFile(e.target.files[0])} 
+                                />
+                            </Form.Group>
+                            */}
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>Отмена</Button>
+                        <Button variant="primary" onClick={handleSubmit}>Сохранить</Button>
+                    </Modal.Footer>
+                </Modal>
+            </Container>
+        </>
+    );
+};

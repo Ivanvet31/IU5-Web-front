@@ -12,7 +12,7 @@ export default defineConfig(({ command }) => {
   
   return {
     // Базовый URL для GitHub Pages
-    base: isBuild ? `/${repoName}/` : '/',
+    base: '/',
 
     plugins: [
       react(),

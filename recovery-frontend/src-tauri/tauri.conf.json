@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "RecoveryTime",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.recoverytime.app",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -18,16 +18,17 @@
         "minWidth": 800,
         "minHeight": 600,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "devtools": true
       }
     ],
-    "security": {
-      "csp": null
+      "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' http://172.16.248.224 http://localhost:8080; img-src 'self' asset: https://asset.localhost http://localhost:9000 http://172.16.248.224 data:;"
     }
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["deb"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

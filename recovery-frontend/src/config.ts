@@ -1,24 +1,36 @@
 // src/config.ts
 
-// IP вашего Go бэкенда. Убедитесь, что он доступен.
-const BACKEND_IP = 'http://localhost:8080';
-const MINIO_IP = 'http://localhost:9000';
+// IP адрес сервера, где запущен Docker (Nginx, Go, Minio)
+const SERVER_IP = '192.168.2.35';
 
-// Функция для определения базового URL API
+// Nginx слушает порт 80, поэтому просто http://IP
+const PROD_BACKEND_URL = `http://${SERVER_IP}`;
+
+// Картинки тоже идут через Nginx (порт 80)
+// Nginx перенаправляет запросы /recovery-images/ -> Minio:9000
+const MINIO_URL = `http://${SERVER_IP}`;
+
 export const getApiBase = (): string => {
-    // @ts-ignore: TypeScript не знает о глобальной переменной __TAURI__
-    const isTauri = !!window.__TAURI__;
+    // Проверка: запущено ли это внутри Tauri (на случай если import.meta.env.PROD сработает не так)
+    // @ts-ignore
+    const isTauri = !!window.__TAURI_INTERNALS__ || !!window.__TAURI__;
 
-    // В Tauri-приложении используем полный URL, в браузере - относительный для прокси
-    return isTauri ? `${BACKEND_IP}/api` : '/api';
+    // В режиме сборки (npm run tauri:build) или внутри Tauri
+    if (import.meta.env.PROD || isTauri) {
+        // Прокси Vite нет, используем полный прямой адрес к Nginx
+        return `${PROD_BACKEND_URL}/api`;
+    } else {
+        // В режиме разработки в браузере (npm run dev) работает Vite Proxy
+        return '/api';
+    }
 };
 
-// Функция для определения базового URL изображений
 export const getImageBase = (): string => {
-    // @ts-ignore
-    const isTauri = !!window.__TAURI__;
-    
-    // В Tauri используем полный URL, в браузере - относительный путь (если Minio тоже проксируется)
-    // или полный, если CORS на Minio настроен. Для простоты оставим полный.
-    return isTauri ? `${MINIO_IP}` : 'http://localhost:9000';
+    return MINIO_URL;
+};
+
+// Хелпер для получения полного пути к бакету с картинками
+// Используется в AdminStrategiesPage.tsx для формирования ссылки
+export const getStoragePath = (): string => {
+    return `${getImageBase()}/recovery-images`;
 };

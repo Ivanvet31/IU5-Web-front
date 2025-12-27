@@ -3,13 +3,12 @@ import { Container, Form, Row, Col, Badge, Spinner, Card, InputGroup, Button } f
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchRequestsList, resolveRequest } from '../store/slices/requestSlice';
-import type { AppDispatch, RootState } from '../store';
+import type { AppDispatch, RootState } from '../store/store';
 import { AppNavbar } from '../components/Navbar';
-import { Search, CheckCircle, XCircle } from 'react-bootstrap-icons';
+import { Search, CheckCircle, XCircle, Calendar3 } from 'react-bootstrap-icons';
 import { formatDateTimeRU, isoToRu } from '../utils/dateUtils';
 import './styles/RequestsListPage.css';
 
-// Хелпер для доступа к полям
 const getField = (obj: any, key: string) => {
     if (!obj) return undefined;
     return obj[key] || obj[key.charAt(0).toUpperCase() + key.slice(1)] || obj[key.toUpperCase()];
@@ -31,7 +30,10 @@ export const RequestsListPage = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     const { list, loading } = useSelector((state: RootState) => state.requests);
-    const { user } = useSelector((state: RootState) => state.user); // Для проверки прав модератора
+    const { user } = useSelector((state: RootState) => state.user);
+    
+    // Определяем, является ли пользователь модератором
+    const isModerator = user?.is_moderator;
 
     const [filters, setFilters] = useState({
         status: '',
@@ -39,15 +41,8 @@ export const RequestsListPage = () => {
         to: ''
     });
 
-    // Состояние для управления типом инпутов даты (text <-> date)
-    const [dateInputType, setDateInputType] = useState<{from: string, to: string}>({
-        from: 'text',
-        to: 'text'
-    });
-
     const [creatorSearch, setCreatorSearch] = useState('');
 
-    // Short Polling
     useEffect(() => {
         const loadData = () => dispatch(fetchRequestsList(filters));
         loadData();
@@ -55,22 +50,22 @@ export const RequestsListPage = () => {
         return () => clearInterval(intervalId);
     }, [dispatch, filters]);
 
-    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleFilterChange = (e: React.ChangeEvent<any>) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
 
-    // Действия модератора (прямо из карточки, если нужно)
     const handleResolve = (e: React.MouseEvent, id: number, action: string) => {
-        e.stopPropagation(); // Чтобы не сработал переход на детальную страницу
+        e.stopPropagation();
         if (window.confirm(`Вы уверены, что хотите ${action === 'complete' ? 'одобрить' : 'отклонить'} эту заявку?`)) {
             dispatch(resolveRequest({ id, action }));
         }
     };
 
-    // Фильтрация на клиенте
     const filteredList = (list || []).filter((item: any) => {
         if (!creatorSearch) return true;
-        const creator = getField(item, 'creator_username') || '';
+        // Поиск по создателю работает, даже если поле скрыто (если вдруг state остался), 
+        // но обычный пользователь видит только свои заявки, так что это безопасно.
+        const creator = getField(item, 'creator_username') || item.User?.Username || item.user?.username || '';
         return creator.toLowerCase().includes(creatorSearch.toLowerCase());
     });
 
@@ -78,7 +73,8 @@ export const RequestsListPage = () => {
         <>
             <AppNavbar />
             <Container className="pt-4 pb-5">
-                {/* Фильтры */}
+                <h2 className="fw-bold mb-4 text-center" style={{ color: '#212529' }}>Заявки</h2>
+
                 <Card className="mb-5 border-0 shadow-sm bg-white rounded-4">
                      <Card.Body className="p-4">
                         <Row className="g-4">
@@ -92,45 +88,73 @@ export const RequestsListPage = () => {
                                     <option value="rejected">Отклонена</option>
                                 </Form.Select>
                             </Col>
+                            
                             <Col md={3}>
                                 <Form.Label className="fw-bold text-muted small">Дата создания (от)</Form.Label>
-                                <Form.Control 
-                                    type={dateInputType.from}
-                                    name="from" 
-                                    placeholder="дд.мм.гггг"
-                                    value={dateInputType.from === 'date' ? filters.from : isoToRu(filters.from)} 
-                                    onChange={handleFilterChange}
-                                    onFocus={() => setDateInputType({...dateInputType, from: 'date'})}
-                                    onBlur={() => setDateInputType({...dateInputType, from: 'text'})}
-                                    className="border-light bg-light"
-                                />
+                                <div className="position-relative">
+                                    <Form.Control 
+                                        type="text"
+                                        placeholder="дд.мм.гггг"
+                                        value={isoToRu(filters.from)} 
+                                        readOnly
+                                        className="border-light bg-light text-start"
+                                        style={{ backgroundColor: '#F8F9FA' }}
+                                    />
+                                    <div className="position-absolute top-50 end-0 translate-middle-y pe-3 text-muted" style={{pointerEvents: 'none'}}>
+                                        <Calendar3 />
+                                    </div>
+                                    <Form.Control 
+                                        type="date"
+                                        name="from" 
+                                        value={filters.from} 
+                                        onChange={handleFilterChange}
+                                        className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
+                                        style={{ cursor: 'pointer' }}
+                                    />
+                                </div>
                             </Col>
+
                             <Col md={3}>
                                 <Form.Label className="fw-bold text-muted small">Дата создания (до)</Form.Label>
-                                <Form.Control 
-                                    type={dateInputType.to}
-                                    name="to" 
-                                    placeholder="дд.мм.гггг"
-                                    value={dateInputType.to === 'date' ? filters.to : isoToRu(filters.to)} 
-                                    onChange={handleFilterChange}
-                                    onFocus={() => setDateInputType({...dateInputType, to: 'date'})}
-                                    onBlur={() => setDateInputType({...dateInputType, to: 'text'})}
-                                    className="border-light bg-light"
-                                />
-                            </Col>
-                            <Col md={3}>
-                                <Form.Label className="fw-bold text-muted small">Поиск по создателю</Form.Label>
-                                <InputGroup>
-                                    <InputGroup.Text className="bg-light border-light"><Search /></InputGroup.Text>
+                                <div className="position-relative">
                                     <Form.Control 
-                                        type="text" 
-                                        placeholder="Логин..." 
-                                        value={creatorSearch} 
-                                        onChange={(e) => setCreatorSearch(e.target.value)}
-                                        className="border-light bg-light"
+                                        type="text"
+                                        placeholder="дд.мм.гггг"
+                                        value={isoToRu(filters.to)} 
+                                        readOnly
+                                        className="border-light bg-light text-start"
+                                        style={{ backgroundColor: '#F8F9FA' }}
                                     />
-                                </InputGroup>
+                                    <div className="position-absolute top-50 end-0 translate-middle-y pe-3 text-muted" style={{pointerEvents: 'none'}}>
+                                        <Calendar3 />
+                                    </div>
+                                    <Form.Control 
+                                        type="date"
+                                        name="to" 
+                                        value={filters.to} 
+                                        onChange={handleFilterChange}
+                                        className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
+                                        style={{ cursor: 'pointer' }}
+                                    />
+                                </div>
                             </Col>
+
+                            {/* ИЗМЕНЕНИЕ: Показываем этот блок только если пользователь - модератор */}
+                            {isModerator && (
+                                <Col md={3}>
+                                    <Form.Label className="fw-bold text-muted small">Поиск по создателю</Form.Label>
+                                    <InputGroup>
+                                        <InputGroup.Text className="bg-light border-light"><Search /></InputGroup.Text>
+                                        <Form.Control 
+                                            type="text" 
+                                            placeholder="Логин..." 
+                                            value={creatorSearch} 
+                                            onChange={(e) => setCreatorSearch(e.target.value)}
+                                            className="border-light bg-light"
+                                        />
+                                    </InputGroup>
+                                </Col>
+                            )}
                         </Row>
                     </Card.Body>
                 </Card>
@@ -142,76 +166,86 @@ export const RequestsListPage = () => {
                 {loading && list.length === 0 ? (
                     <div className="text-center py-5"><Spinner animation="border" variant="primary" /></div>
                 ) : (
-                    <Row className="g-4">
+                    <div className="d-flex flex-column gap-3">
                         {filteredList.map((order: any) => {
                             const id = getField(order, 'id');
                             const status = getField(order, 'status');
                             const createdAt = getField(order, 'createdAt') || getField(order, 'created_at');
-                            // const completedAt = getField(order, 'completedAt') || getField(order, 'completed_at') || getField(order, 'formed_at');
                             const resultTime = getField(order, 'calculated_recovery_time_hours') || getField(order, 'calculatedRecoveryTimeHours');
-                            const isModerator = user?.is_moderator;
+                            // Ищем создателя в разных местах структуры
+                            const creator = getField(order, 'creator_username') 
+                                         || order.User?.Username 
+                                         || order.user?.username 
+                                         || '—';
 
                             return (
-                                <Col md={6} lg={4} key={id}>
-                                    <Card 
-                                        className="h-100 border-0 shadow-sm request-card-hover" 
-                                        onClick={() => navigate(`/requests/${id}`)}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <Card.Body className="p-4 d-flex flex-column">
-                                            <div className="d-flex justify-content-between align-items-start mb-3">
-                                                <h5 className="fw-bold mb-0">Заявка №{id}</h5>
-                                                {getStatusBadge(status)}
-                                            </div>
+                                <Card 
+                                    key={id}
+                                    className="border-0 shadow-sm request-card-hover rounded-3 overflow-hidden" 
+                                    onClick={() => navigate(`/requests/${id}`)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <Card.Body className="p-4">
+                                        <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                                            <h5 className="fw-bold mb-0">Заявка №{id}</h5>
+                                            {getStatusBadge(status)}
+                                        </div>
 
-                                            <div className="mb-4 small flex-grow-1">
-                                                <div className="d-flex justify-content-between mb-2 pb-2 border-bottom">
-                                                    <span className="text-muted">Создана:</span>
-                                                    <span className="fw-medium">{formatDateTimeRU(createdAt)}</span>
+                                        <Row>
+                                            <Col md={3}>
+                                                <div className="text-uppercase text-muted small fw-bold mb-1">Статус</div>
+                                                <div className="fw-medium">
+                                                    {status === 'formed' ? 'В работе' :
+                                                     status === 'completed' ? 'Завершена' :
+                                                     status === 'rejected' ? 'Отклонена' :
+                                                     status === 'draft' ? 'Черновик' : status}
                                                 </div>
-                                                <div className="d-flex justify-content-between">
-                                                    <span className="text-muted">ID создателя:</span>
-                                                    <span className="fw-bold">
-                                                        {getField(order, 'creator_username') || getField(order, 'user_id')}
-                                                    </span>
+                                            </Col>
+                                            <Col md={3}>
+                                                <div className="text-uppercase text-muted small fw-bold mb-1">Дата создания</div>
+                                                <div className="fw-medium">
+                                                    {(createdAt) ? formatDateTimeRU(createdAt) : '—'}
                                                 </div>
-                                            </div>
-
-                                            <div className="mt-auto">
-                                                <div className="d-flex justify-content-between align-items-end mb-3">
-                                                    <span className="text-muted small">Время восстановления:</span>
-                                                    <span className={`fw-bold ${resultTime ? 'text-primary fs-5' : 'text-muted'}`}>
-                                                        {resultTime ? `${Number(resultTime).toFixed(2)} ч.` : '—'}
-                                                    </span>
+                                            </Col>
+                                            <Col md={3}>
+                                                <div className="text-uppercase text-muted small fw-bold mb-1">Время восстановления</div>
+                                                <div className={`fw-bold ${resultTime ? 'text-primary' : 'text-muted'}`}>
+                                                    {resultTime ? `${Number(resultTime).toFixed(2)} ч.` : '—'}
                                                 </div>
-
-                                                {/* Кнопки модератора прямо на карточке */}
-                                                {isModerator && status === 'formed' && (
-                                                    <div className="d-flex gap-2 mt-3 pt-3 border-top">
+                                            </Col>
+                                            <Col md={3} className="text-end">
+                                                 {isModerator && status === 'formed' ? (
+                                                    <div className="d-flex gap-2 justify-content-end">
                                                         <Button 
-                                                            variant="success" size="sm" className="w-100"
+                                                            variant="success" size="sm"
                                                             onClick={(e) => handleResolve(e, id, 'complete')}
                                                         >
                                                             <CheckCircle className="me-1"/> Одобрить
                                                         </Button>
                                                         <Button 
-                                                            variant="outline-danger" size="sm" className="w-100"
+                                                            variant="outline-danger" size="sm"
                                                             onClick={(e) => handleResolve(e, id, 'reject')}
                                                         >
                                                             Отклонить
                                                         </Button>
                                                     </div>
+                                                ) : (
+                                                    <div className="text-muted small"></div>
                                                 )}
-                                            </div>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
+                                            </Col>
+                                        </Row>
+
+                                        <div className="mt-4 pt-3 border-top text-muted small">
+                                            Создатель: <span className="fw-bold text-dark">{creator}</span>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
                             );
                         })}
                         {filteredList.length === 0 && (
-                            <Col className="text-center py-5 text-muted w-100">Заявок не найдено</Col>
+                            <div className="text-center py-5 text-muted">Заявок не найдено</div>
                         )}
-                    </Row>
+                    </div>
                 )}
             </Container>
         </>

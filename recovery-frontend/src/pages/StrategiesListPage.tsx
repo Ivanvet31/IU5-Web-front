@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Container, Row, Col, Spinner, Form, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { Cart3 } from 'react-bootstrap-icons';
+import { Cart3, Gear } from 'react-bootstrap-icons';
 import { AppNavbar } from '../components/Navbar';
 import { StrategyCard } from '../components/StrategyCard';
 import { CustomBreadcrumbs } from '../components/Breadcrumbs';
@@ -15,7 +15,7 @@ export const StrategiesListPage = () => {
   const { items: strategies, loading, searchQuery } = useAppSelector((state) => state.strategies);
   
   const { count, requestId } = useAppSelector((state) => state.cart);
-  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
+  const { isAuthenticated, user } = useAppSelector((state) => state.user);
 
   useEffect(() => {
     dispatch(fetchStrategies(searchQuery));
@@ -43,45 +43,62 @@ export const StrategiesListPage = () => {
       <Container className="py-4">
         <CustomBreadcrumbs crumbs={breadcrumbs} />
         
-        <h1 className="mb-4">Стратегии восстановления</h1>
+        {/* Заголовок по центру */}
+        <h1 className="mb-4 text-center">Стратегии восстановления</h1>
         
-        <Form onSubmit={handleSearchSubmit} className="mb-4">
-          <Row className="align-items-center justify-content-center"> {/* Добавил justify-content-center */}
-            <Col md={8}>
+        <Form onSubmit={handleSearchSubmit} className="mb-5">
+          <Row className="align-items-center justify-content-center g-2">
+            {/* Поле ввода занимает все свободное место */}
+            <Col>
               <Form.Control
                 type="search"
-                placeholder="Поиск"
+                placeholder="Введите название стратегии для поиска..."
                 value={searchQuery}
                 onChange={handleSearchChange}
                 className="search-input"
               />
             </Col>
-            <Col md={2}>
-              <Button type="submit" variant="primary" className="w-100">
-                Поиск
+            
+            {/* Кнопка поиска */}
+            <Col xs="auto">
+              <Button type="submit" variant="primary" className="px-4">
+                Искать
               </Button>
             </Col>
 
-            {/* ИЗМЕНЕНИЕ: Рендерим колонку с корзиной ТОЛЬКО если авторизован */}
-            {isAuthenticated && (
-                <Col md={2} className="text-center">
-                {requestId && count > 0 ? (
-                    <Link to={`/cart`} className="cart-link-page">
-                        <div className="calculator-link-page">
-                        <Cart3 size={24} color="#333" />
-                        <span className="calculator-badge">{count}</span>
-                        </div>
+            {/* Кнопка управления (Только для модератора) */}
+            {user?.is_moderator && (
+                <Col xs="auto">
+                    <Link to="/admin/strategies">
+                        <Button variant="primary" className="d-flex align-items-center gap-2 px-3">
+                            <Gear /> Управление
+                        </Button>
                     </Link>
-                ) : (
-                    <div className="calculator-link-page disabled" style={{opacity: 0.5, cursor: 'not-allowed'}}>
-                        <Cart3 size={24} color="#999" />
-                        <span className="calculator-badge" style={{backgroundColor: '#ccc'}}>0</span>
-                    </div>
-                )}
+                </Col>
+            )}
+
+            {/* Иконка корзины (Только для авторизованных) */}
+            {isAuthenticated && (
+                <Col xs="auto" className="ps-2">
+                    {requestId && count > 0 ? (
+                        <Link to={`/cart`} className="cart-link-page">
+                            <div className="calculator-link-page">
+                                <Cart3 size={24} color="#333" />
+                                <span className="calculator-badge">{count}</span>
+                            </div>
+                        </Link>
+                    ) : (
+                        <div className="calculator-link-page disabled" style={{opacity: 0.5, cursor: 'not-allowed'}}>
+                            <Cart3 size={24} color="#999" />
+                            <span className="calculator-badge" style={{backgroundColor: '#ccc'}}>0</span>
+                        </div>
+                    )}
                 </Col>
             )}
           </Row>
         </Form>
+
+        <hr className="mb-5" style={{ opacity: 0.1 }} />
 
         {loading ? (
           <div className="text-center py-5">

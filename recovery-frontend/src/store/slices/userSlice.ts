@@ -4,7 +4,7 @@ import type {
     DsUserLoginRequest, 
     DsUserRegisterRequest, 
     DsUserDTO, 
-    DsUpdateUserRequest // <-- Важно: этот тип должен быть импортирован
+    DsUpdateUserRequest
 } from '../../api/Api';
 
 interface UserState {
@@ -16,10 +16,12 @@ interface UserState {
     registerSuccess: boolean;
 }
 
+// 1. Читаем данные из браузера при запуске
 const storedToken = localStorage.getItem('authToken');
 const storedUser = localStorage.getItem('userInfo');
 
 const initialState: UserState = {
+    // Если данные есть, сразу восстанавливаем их в стейт
     user: storedUser ? JSON.parse(storedUser) : null,
     token: storedToken || null,
     isAuthenticated: !!storedToken,
@@ -37,9 +39,14 @@ export const loginUser = createAsyncThunk(
             const response = await api.auth.loginCreate(credentials);
             const data = response.data;
 
-            if (data.token) localStorage.setItem('authToken', data.token);
-            if (data.user) localStorage.setItem('userInfo', JSON.stringify(data.user));
-
+            if (data.token) {
+                // 2. Сохраняем токен и данные юзера
+                localStorage.setItem('authToken', data.token);
+                if (data.user) {
+                    localStorage.setItem('userInfo', JSON.stringify(data.user));
+                }
+            }
+            
             return data;
         } catch (err: any) {
             return rejectWithValue(err.response?.data?.error || 'Ошибка авторизации');
@@ -67,6 +74,7 @@ export const logoutUser = createAsyncThunk(
         } catch (e) {
             console.warn('Logout API error', e);
         } finally {
+            // 3. Чистим всё при выходе
             localStorage.removeItem('authToken');
             localStorage.removeItem('userInfo');
         }
@@ -77,7 +85,8 @@ export const fetchUserProfile = createAsyncThunk(
     'user/fetchProfile',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.users.getUsers(); // В Api.ts это getUsers (GET /users/me)
+            const response = await api.users.getUsers();
+            // Обновляем данные в сторадже, если они изменились на сервере
             localStorage.setItem('userInfo', JSON.stringify(response.data));
             return response.data;
         } catch (err: any) {
@@ -86,14 +95,11 @@ export const fetchUserProfile = createAsyncThunk(
     }
 );
 
-// ВОТ ЭТА ФУНКЦИЯ, КОТОРОЙ НЕ ХВАТАЛО
 export const updateUserProfile = createAsyncThunk(
     'user/updateProfile',
-    async (data: DsUpdateUserRequest, { rejectWithValue }) => {
+    async (data: DsUpdateUserRequest, { rejectWithValue, getState }) => {
         try {
-            // PUT /users/me
             await api.users.putUsers(data);
-            // Возвращаем данные, чтобы обновить стейт
             return data;
         } catch (err: any) {
             return rejectWithValue(err.response?.data?.error || 'Ошибка обновления профиля');
@@ -149,13 +155,20 @@ const userSlice = createSlice({
             // Fetch Profile
             .addCase(fetchUserProfile.fulfilled, (state, action) => {
                 state.user = action.payload;
+                state.isAuthenticated = true;
             })
-            // Update Profile (Обработка обновления)
+            .addCase(fetchUserProfile.rejected, (state) => {
+                // Если токен протух, чистим данные
+                state.isAuthenticated = false;
+                state.token = null;
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userInfo');
+            })
+            // Update Profile
             .addCase(updateUserProfile.fulfilled, (state, action) => {
                 if (state.user) {
-                    // Обновляем локальное состояние
                     if (action.payload.username) state.user.username = action.payload.username;
-                    // Обновляем в localStorage
+                    // 4. Обновляем userInfo в localStorage при изменении данных
                     localStorage.setItem('userInfo', JSON.stringify(state.user));
                 }
             });
