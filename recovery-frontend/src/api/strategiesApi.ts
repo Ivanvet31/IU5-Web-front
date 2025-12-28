@@ -1,5 +1,6 @@
-import type { IPaginatedStrategies, IStrategy } from '../types';
+import type { IPaginatedStrategies, IStrategy, ICartBadge } from '../types';
 import { STRATEGIES_MOCK } from './mock';
+
 
 const API_PREFIX = '/api';
 
@@ -49,4 +50,21 @@ export const getStrategyById = async (id: string): Promise<IStrategy | null> => 
     const strategy = STRATEGIES_MOCK.items.find(s => s.id === parseInt(id));
     return strategy || null;
   }
+};
+
+// Получение корзины
+export const getCartBadge = async (): Promise<ICartBadge> => {
+    try {
+
+        const response = await fetch(`${API_PREFIX}/cart`);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch cart data');
+        }
+        return await response.json();
+
+    } catch (error) {
+        console.warn('Could not fetch cart data, assuming cart is empty.', error);
+        return { strategy_id: null, count: 0 };
+    }
 };

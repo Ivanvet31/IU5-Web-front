@@ -5,15 +5,18 @@ import { Cart3 } from 'react-bootstrap-icons';
 import { AppNavbar } from '../components/Navbar';
 import { StrategyCard } from '../components/StrategyCard';
 import { CustomBreadcrumbs } from '../components/Breadcrumbs';
-import { getStrategies } from '../api/strategiesApi';
-import type { IStrategy } from '../types';
+
+import { getStrategies, getCartBadge } from '../api/strategiesApi';
+import type { IStrategy, ICartBadge } from '../types';
+
 import './styles/StrategiesListPage.css';
 
 export const StrategiesListPage = () => {
   const [strategies, setStrategies] = useState<IStrategy[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [cartBadge, setCartBadge] = useState<ICartBadge>({ strategy_id: null, count: 0 });
+    
   const fetchStrategies = (filterTitle: string) => {
     setLoading(true);
     getStrategies(filterTitle)
@@ -30,6 +33,9 @@ export const StrategiesListPage = () => {
 
   useEffect(() => {
     fetchStrategies('');
+    getCartBadge().then(cartData => {
+    setCartBadge(cartData);
+        });
   }, []);
 
   const handleSearchSubmit = (event: React.FormEvent) => {
